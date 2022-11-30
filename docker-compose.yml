@@ -1,0 +1,56 @@
+version: '3.5'
+services:
+  proxy:
+    build:
+      context: ./dockerfiles/proxy
+      dockerfile: Dockerfile
+    # image: proxyimage
+    container_name: proxyContainer
+    volumes:
+      - "./html:/usr/share/nginx/html"
+    depends_on: 
+      - backend
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      backend-frontend:
+        aliases:
+          - frontendBackendNetwork
+
+  backend:
+    build:
+      context: ./dockerfiles/backend
+      dockerfile: Dockerfile
+    # image: backendimage
+    container_name: backendContainer
+    restart: always
+    volumes:
+      - "./dockerfiles/backend/pythonFiles:/code"
+    depends_on: 
+      - mysql
+    networks:
+      backend-frontend:
+        aliases:
+          - backendFrontendNetwork
+      backend-database:
+        aliases:
+          - backendDatabaseNetwork
+
+  mysql:
+    build:
+      context: ./dockerfiles/sqlfile
+      dockerfile: Dockerfile
+    # image: sqlimage
+    container_name: databaseContainer
+    environment:
+      - MYSQL_ROOT_PASSWORD=test
+    networks:
+      backend-database:
+        aliases:
+          - databaseBackendNetwork
+
+networks:
+  backend-frontend:
+  
+  backend-database:
